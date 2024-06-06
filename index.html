@@ -9,6 +9,10 @@
 	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 	<script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
 	<script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+	<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-scale/Control.Scale.css" />
+    <script src="https://unpkg.com/leaflet-control-scale/Control.Scale.js"></script>
     <style>
         body, html {
             margin: 0;
@@ -41,17 +45,17 @@ map.setMaxBounds(bounds);
 var basemaps = {
     Topografia: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         attribution: '<a href="https://carto.com/basemaps">carto.com</a>'
     }),
     OSM: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     }),
     Ortofotomapa: L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/StandardResolution', {
         maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         attribution: '&copy; <a href="https://www.geoportal.gov.pl/">geoportal.gov.pl</a>',
         layers: 'Raster',
         transparent: true,
@@ -62,42 +66,42 @@ var basemaps = {
 var overlayMaps = {
     'granice': L.tileLayer.wms('http://mapy.geoportal.gov.pl/wss/service/PZGIK/PRG/WMS/AdministrativeBoundaries', {
 		maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         layers: 'A02_Granice_powiatow',
         transparent: true,
         format: 'image/png'
     }),
     'woda powierzchniowa': L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer', {
 		maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         layers: 'WPow',
         transparent: true,
         format: 'image/png'
     }),
     'teren leśny i zadrzewiony': L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer', {
 		maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         layers: 'TLes',
         transparent: true,
         format: 'image/png'
     }),
     'roślinność krzewiasta': L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer', {
 		maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         layers: 'RKr',
         transparent: true,
         format: 'image/png'
     }),
     'uprawa trwała': L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer', {
 		maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         layers: 'UTrw',
         transparent: true,
         format: 'image/png'
     }),
     'roślinność trawiasta i uprawa rolna': L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycja_BDOT10k_WMS/MapServer/WMSServer', {
 		maxZoom: 19,
-        minZoom: 13,
+        minZoom: 12,
         layers: 'RTr',
         transparent: true,
         format: 'image/png'
@@ -231,6 +235,32 @@ fetch('https://raw.githubusercontent.com/piotrp02/landslice/master/data/plock_pt
         });
     });
 
+var osmGeocoder = new L.Control.Geocoder({
+	collapsed: false, /* Whether it's collapsed or not */
+	position: 'bottomleft', /* The position of the control */
+	placeholder: 'Wyszukaj lokalizację...', /* The text of the search input placeholder */
+	defaultMarkGeocode: true, /* Whether to automatically mark the first geocode result on the map */
+	showUniqueResult: true, /* Whether to show the first result found directly on the map */
+	bounds: bounds,	/* Restrict the search within the specified bounds */
+	language: 'pl',
+	callback: function (results) {
+         var bbox = results[0].boundingbox,
+            first = new L.LatLng(bbox[0], bbox[2]),
+            second = new L.LatLng(bbox[1], bbox[3]),
+            bounds = new L.LatLngBounds([first, second]);
+         this._map.fitBounds(bounds);
+            
+            // Display an alert on successful geocoding
+            if (results.length > 0) {
+                console.log("Location found!");
+            }
+   }
+});
+
+map.addControl(osmGeocoder);
+
+// Add scale control
+L.control.scale({imperial: false}).addTo(map);
 </script>
 
 </body>
